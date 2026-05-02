@@ -16,12 +16,14 @@ from browser_use.utils import _log_pretty_path, logger
 
 
 def _get_enable_default_extensions_default() -> bool:
-	"""Get the default value for enable_default_extensions from env var or True."""
+	"""Default to OFF in this fork so the first browser launch never reaches
+	out to https://clients2.google.com to download CRX bundles. The user can
+	still opt in by setting `BROWSER_USE_DISABLE_EXTENSIONS=0` (or by passing
+	`enable_default_extensions=True` to BrowserProfile)."""
 	env_val = os.getenv('BROWSER_USE_DISABLE_EXTENSIONS')
 	if env_val is not None:
-		# If DISABLE_EXTENSIONS is truthy, return False (extensions disabled)
-		return env_val.lower() in ('0', 'false', 'no', 'off', '')
-	return True
+		return env_val.lower() in ('0', 'false', 'no', 'off')
+	return False
 
 
 CHROME_DEBUG_PORT = 9242  # use a non-default port to avoid conflicts with other tools / devs using 9222

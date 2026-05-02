@@ -1726,7 +1726,13 @@ async def textual_interface(config: dict[str, Any]):
 
 
 async def run_auth_command():
-	"""Run the authentication command with dummy task in UI."""
+	"""Cloud authentication is disabled in this fork."""
+	print('Cloud authentication is disabled in this fork — browser-use runs fully locally.')
+	return
+
+
+async def _run_auth_command_disabled_legacy():
+	"""Original cloud authentication flow, retained for reference but unreachable."""
 	import asyncio
 	import os
 

@@ -39,20 +39,11 @@ def _is_debug_mode() -> bool:
 	return False
 
 
-# Try to import lmnr observe
+# lmnr (Laminar) tracing is intentionally disabled in this fork so that
+# function-level traces never leave the host. The observe / observe_debug
+# decorators below are no-ops regardless of whether `lmnr` is installed.
 _LMNR_AVAILABLE = False
 _lmnr_observe = None
-
-try:
-	from lmnr import observe as _lmnr_observe  # type: ignore
-
-	if os.environ.get('BROWSER_USE_VERBOSE_OBSERVABILITY', 'false').lower() == 'true':
-		logger.debug('Lmnr is available for observability')
-	_LMNR_AVAILABLE = True
-except (ImportError, TypeError):
-	if os.environ.get('BROWSER_USE_VERBOSE_OBSERVABILITY', 'false').lower() == 'true':
-		logger.debug('Lmnr is not available for observability')
-	_LMNR_AVAILABLE = False
 
 
 def _create_no_op_decorator(

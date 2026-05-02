@@ -642,20 +642,7 @@ def get_browser_use_version() -> str:
 
 
 async def check_latest_browser_use_version() -> str | None:
-	"""Check the latest version of browser-use from PyPI asynchronously.
-
-	Returns:
-		The latest version string if successful, None if failed
-	"""
-	try:
-		async with httpx.AsyncClient(timeout=3.0) as client:
-			response = await client.get('https://pypi.org/pypi/browser-use/json')
-			if response.status_code == 200:
-				data = response.json()
-				return data['info']['version']
-	except Exception:
-		# Silently fail - we don't want to break agent startup due to network issues
-		pass
+	"""Disabled in this fork — never contacts PyPI."""
 	return None
 
 

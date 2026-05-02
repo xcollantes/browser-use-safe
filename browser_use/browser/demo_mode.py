@@ -444,10 +444,10 @@ _DEMO_PANEL_SCRIPT = r"""(function () {
     header.className = 'browser-use-demo-header';
     const title = document.createElement('div');
     title.className = 'browser-use-logo';
-    const logo = document.createElement('img');
-    logo.src = 'https://raw.githubusercontent.com/browser-use/browser-use/main/static/browser-use-dark.png';
-    logo.alt = 'Browser-use';
-    logo.loading = 'lazy';
+    const logo = document.createElement('span');
+    logo.textContent = 'browser-use';
+    logo.style.font = '600 16px system-ui, sans-serif';
+    logo.style.color = '#fff';
     title.appendChild(logo);
     const actions = document.createElement('div');
     actions.className = 'browser-use-header-actions';

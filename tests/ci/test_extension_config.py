@@ -8,15 +8,14 @@ import pytest
 class TestDisableExtensionsEnvVar:
 	"""Test BROWSER_USE_DISABLE_EXTENSIONS environment variable."""
 
-	def test_default_value_is_true(self):
-		"""Without env var set, enable_default_extensions should default to True."""
-		# Clear the env var if it exists
+	def test_default_value_is_false(self):
+		"""Without env var set, enable_default_extensions should default to False in this fork
+		(prevents `clients2.google.com` extension downloads on first browser launch)."""
 		original = os.environ.pop('BROWSER_USE_DISABLE_EXTENSIONS', None)
 		try:
-			# Import fresh to get the default
 			from browser_use.browser.profile import _get_enable_default_extensions_default
 
-			assert _get_enable_default_extensions_default() is True
+			assert _get_enable_default_extensions_default() is False
 		finally:
 			if original is not None:
 				os.environ['BROWSER_USE_DISABLE_EXTENSIONS'] = original
@@ -38,7 +37,8 @@ class TestDisableExtensionsEnvVar:
 			('0', True),
 			('no', True),
 			('off', True),
-			('', True),
+			# Empty string is treated as "unset" in this fork → default-off.
+			('', False),
 		],
 	)
 	def test_env_var_values(self, env_value: str, expected_enabled: bool):

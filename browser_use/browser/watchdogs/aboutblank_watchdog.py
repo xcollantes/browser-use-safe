@@ -175,12 +175,17 @@ class AboutBlankWatchdog(BaseWatchdog):
 					loadingOverlay.style.zIndex = '99999';
 					loadingOverlay.style.overflow = 'hidden';
 
-					// Create the image element
-					const img = document.createElement('img');
-					img.src = 'https://cf.browser-use.com/logo.svg';
-					img.alt = 'Browser-Use';
+					// Use a local text "logo" instead of fetching a remote image so
+					// no request goes to cf.browser-use.com (or anywhere) on every
+					// about:blank tab.
+					const img = document.createElement('div');
+					img.textContent = 'browser-use';
 					img.style.width = '200px';
-					img.style.height = 'auto';
+					img.style.height = '60px';
+					img.style.lineHeight = '60px';
+					img.style.textAlign = 'center';
+					img.style.font = '600 22px system-ui, sans-serif';
+					img.style.color = '#fff';
 					img.style.position = 'absolute';
 					img.style.left = '0px';
 					img.style.top = '0px';

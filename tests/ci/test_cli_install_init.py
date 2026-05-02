@@ -45,16 +45,16 @@ def test_init_subcommand_help():
 	assert '--list' in result.stdout or '-l' in result.stdout
 
 
-def test_init_list_templates():
-	"""Test that init --list shows available templates."""
+def test_init_list_templates_disabled_in_fork():
+	"""`init --list` fetches from raw.githubusercontent.com upstream — disabled
+	in this fork, so it should now exit non-zero with a clear offline message."""
 	result = subprocess.run(
 		[sys.executable, '-m', 'browser_use.skill_cli.main', 'init', '--list'],
 		capture_output=True,
 		text=True,
 	)
-	assert result.returncode == 0
-	assert 'default' in result.stdout
-	assert 'advanced' in result.stdout
+	assert result.returncode != 0
+	assert 'disabled in this fork' in result.stdout
 
 
 def test_mcp_flag_help():

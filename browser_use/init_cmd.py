@@ -10,8 +10,6 @@ import shutil
 import sys
 from pathlib import Path
 from typing import Any
-from urllib import request
-from urllib.error import URLError
 
 import click
 from InquirerPy import inquirer
@@ -32,59 +30,31 @@ TEMPLATE_REPO_URL = 'https://raw.githubusercontent.com/browser-use/template-libr
 INIT_TEMPLATES: dict[str, Any] = {}
 
 
-def _fetch_template_list() -> dict[str, Any] | None:
-	"""
-	Fetch template list from GitHub templates.json.
+# Network template fetching is disabled in this fork — `browser-use init`
+# would otherwise hit GitHub on every invocation. The functions below now
+# raise so any caller fails fast with a clear message.
 
-	Returns template dict if successful, None if failed.
-	"""
-	try:
-		url = f'{TEMPLATE_REPO_URL}/templates.json'
-		with request.urlopen(url, timeout=5) as response:
-			data = response.read().decode('utf-8')
-			return json.loads(data)
-	except (URLError, TimeoutError, json.JSONDecodeError, Exception):
-		return None
+_OFFLINE_MESSAGE = (
+	'`browser-use init` template fetching is disabled in this fork. '
+	'Copy a template from the upstream `browser-use/template-library` '
+	'repository manually, or vendor templates locally.'
+)
+
+
+def _fetch_template_list() -> dict[str, Any] | None:
+	return None
 
 
 def _get_template_list() -> dict[str, Any]:
-	"""
-	Get template list from GitHub.
-
-	Raises FileNotFoundError if GitHub fetch fails.
-	"""
-	templates = _fetch_template_list()
-	if templates is not None:
-		return templates
-	raise FileNotFoundError('Could not fetch templates from GitHub. Check your internet connection.')
+	raise FileNotFoundError(_OFFLINE_MESSAGE)
 
 
 def _fetch_from_github(file_path: str) -> str | None:
-	"""
-	Fetch template file from GitHub.
-
-	Returns file content if successful, None if failed.
-	"""
-	try:
-		url = f'{TEMPLATE_REPO_URL}/{file_path}'
-		with request.urlopen(url, timeout=5) as response:
-			return response.read().decode('utf-8')
-	except (URLError, TimeoutError, Exception):
-		return None
+	return None
 
 
 def _fetch_binary_from_github(file_path: str) -> bytes | None:
-	"""
-	Fetch binary file from GitHub.
-
-	Returns file content if successful, None if failed.
-	"""
-	try:
-		url = f'{TEMPLATE_REPO_URL}/{file_path}'
-		with request.urlopen(url, timeout=5) as response:
-			return response.read()
-	except (URLError, TimeoutError, Exception):
-		return None
+	return None
 
 
 def _get_template_content(file_path: str) -> str:

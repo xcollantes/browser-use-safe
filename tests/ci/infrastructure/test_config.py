@@ -30,19 +30,13 @@ class TestLazyConfig:
 			else:
 				os.environ.pop('BROWSER_USE_LOGGING_LEVEL', None)
 
-	def test_boolean_env_vars(self):
-		"""Test boolean environment variables are parsed correctly."""
+	def test_telemetry_is_hard_disabled(self):
+		"""ANONYMIZED_TELEMETRY is permanently False in this fork regardless of env var."""
 		original_value = os.environ.get('ANONYMIZED_TELEMETRY', '')
 		try:
-			# Test true values
-			for true_val in ['true', 'True', 'TRUE', 'yes', 'Yes', '1']:
-				os.environ['ANONYMIZED_TELEMETRY'] = true_val
-				assert CONFIG.ANONYMIZED_TELEMETRY is True, f'Failed for value: {true_val}'
-
-			# Test false values
-			for false_val in ['false', 'False', 'FALSE', 'no', 'No', '0']:
-				os.environ['ANONYMIZED_TELEMETRY'] = false_val
-				assert CONFIG.ANONYMIZED_TELEMETRY is False, f'Failed for value: {false_val}'
+			for any_val in ['true', 'True', 'TRUE', 'yes', '1', 'false', '0', '']:
+				os.environ['ANONYMIZED_TELEMETRY'] = any_val
+				assert CONFIG.ANONYMIZED_TELEMETRY is False, f'Telemetry must stay disabled, got True for {any_val!r}'
 		finally:
 			if original_value:
 				os.environ['ANONYMIZED_TELEMETRY'] = original_value
@@ -91,30 +85,24 @@ class TestLazyConfig:
 			else:
 				os.environ.pop('XDG_CACHE_HOME', None)
 
-	def test_cloud_sync_inherits_telemetry(self):
-		"""Test BROWSER_USE_CLOUD_SYNC inherits from ANONYMIZED_TELEMETRY when not set."""
+	def test_cloud_sync_is_hard_disabled(self):
+		"""BROWSER_USE_CLOUD_SYNC is permanently False in this fork regardless of env vars."""
 		telemetry_original = os.environ.get('ANONYMIZED_TELEMETRY', '')
 		sync_original = os.environ.get('BROWSER_USE_CLOUD_SYNC', '')
+		version_original = os.environ.get('BROWSER_USE_VERSION_CHECK', '')
 		try:
-			# When BROWSER_USE_CLOUD_SYNC is not set, it should inherit from ANONYMIZED_TELEMETRY
 			os.environ['ANONYMIZED_TELEMETRY'] = 'true'
-			os.environ.pop('BROWSER_USE_CLOUD_SYNC', None)
-			assert CONFIG.BROWSER_USE_CLOUD_SYNC is True
-
-			os.environ['ANONYMIZED_TELEMETRY'] = 'false'
-			os.environ.pop('BROWSER_USE_CLOUD_SYNC', None)
-			assert CONFIG.BROWSER_USE_CLOUD_SYNC is False
-
-			# When explicitly set, it should use its own value
-			os.environ['ANONYMIZED_TELEMETRY'] = 'false'
 			os.environ['BROWSER_USE_CLOUD_SYNC'] = 'true'
-			assert CONFIG.BROWSER_USE_CLOUD_SYNC is True
+			os.environ['BROWSER_USE_VERSION_CHECK'] = 'true'
+			assert CONFIG.BROWSER_USE_CLOUD_SYNC is False
+			assert CONFIG.BROWSER_USE_VERSION_CHECK is False
 		finally:
-			if telemetry_original:
-				os.environ['ANONYMIZED_TELEMETRY'] = telemetry_original
-			else:
-				os.environ.pop('ANONYMIZED_TELEMETRY', None)
-			if sync_original:
-				os.environ['BROWSER_USE_CLOUD_SYNC'] = sync_original
-			else:
-				os.environ.pop('BROWSER_USE_CLOUD_SYNC', None)
+			for key, val in (
+				('ANONYMIZED_TELEMETRY', telemetry_original),
+				('BROWSER_USE_CLOUD_SYNC', sync_original),
+				('BROWSER_USE_VERSION_CHECK', version_original),
+			):
+				if val:
+					os.environ[key] = val
+				else:
+					os.environ.pop(key, None)

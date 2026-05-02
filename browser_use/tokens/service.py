@@ -147,29 +147,13 @@ class TokenCost:
 			await self._fetch_and_cache_pricing_data()
 
 	async def _fetch_and_cache_pricing_data(self) -> None:
-		"""Fetch pricing data from LiteLLM GitHub and cache it with timestamp"""
-		try:
-			async with httpx.AsyncClient() as client:
-				response = await client.get(self.pricing_url, timeout=30)
-				response.raise_for_status()
+		"""Disabled in this fork — never contacts the LiteLLM pricing repo.
 
-				self._pricing_data = response.json()
-
-			# Create cache object with timestamp
-			cached = CachedPricingData(timestamp=datetime.now(), source_url=self.pricing_url, data=self._pricing_data or {})
-
-			# Ensure cache directory exists
-			self._cache_dir.mkdir(parents=True, exist_ok=True)
-
-			# Create cache file with timestamp in filename
-			timestamp_str = datetime.now().strftime('%Y%m%d_%H%M%S')
-			cache_file = self._cache_dir / f'pricing_{timestamp_str}.json'
-
-			await anyio.Path(cache_file).write_text(cached.model_dump_json(indent=2))
-		except Exception as e:
-			logger.debug(f'Error fetching pricing data: {e}')
-			# Fall back to empty pricing data
-			self._pricing_data = {}
+		Pricing for browser-use's own models is bundled in
+		`browser_use.tokens.custom_pricing`. For any other model, cost
+		calculation simply returns no data; the agent itself is unaffected.
+		"""
+		self._pricing_data = {}
 
 	async def get_model_pricing(self, model_name: str) -> ModelPricing | None:
 		"""Get pricing information for a specific model"""
