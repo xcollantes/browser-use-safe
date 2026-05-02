@@ -27,37 +27,21 @@ class SessionInfo:
 	browser_session: BrowserSession
 	actions: ActionHandler | None = None
 	python_session: PythonSession = field(default_factory=PythonSession)
-	use_cloud: bool = False
 
 
 async def create_browser_session(
 	headed: bool,
 	profile: str | None,
 	cdp_url: str | None = None,
-	use_cloud: bool = False,
-	cloud_profile_id: str | None = None,
-	cloud_proxy_country_code: str | None = None,
-	cloud_timeout: int | None = None,
 ) -> CLIBrowserSession:
 	"""Create BrowserSession based on connection mode.
 
 	- CDP URL: Connect to existing browser (cdp_url takes precedence)
-	- Cloud: Provision a cloud browser via BrowserSession(use_cloud=True)
 	- With profile: User's real Chrome with the specified profile
 	- No profile: Playwright-managed Chromium (default)
 	"""
 	if cdp_url is not None:
 		return CLIBrowserSession(cdp_url=cdp_url)  # type: ignore[call-arg]
-
-	if use_cloud:
-		kwargs: dict = {'use_cloud': True}
-		if cloud_profile_id is not None:
-			kwargs['cloud_profile_id'] = cloud_profile_id
-		if cloud_proxy_country_code is not None:
-			kwargs['cloud_proxy_country_code'] = cloud_proxy_country_code
-		if cloud_timeout is not None:
-			kwargs['cloud_timeout'] = cloud_timeout
-		return CLIBrowserSession(**kwargs)  # type: ignore[call-arg]
 
 	if profile is None:
 		return CLIBrowserSession(headless=not headed)  # type: ignore[call-arg]

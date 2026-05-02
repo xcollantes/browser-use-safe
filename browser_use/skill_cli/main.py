@@ -141,15 +141,7 @@ if _get_subcommand() == 'init' or '--template' in sys.argv:
 
 	sys.exit(_emit_packaged_template(template, output, force))
 
-# Handle 'cloud --help' / 'cloud -h' early — argparse intercepts --help before
-# REMAINDER can capture it, so we route to our custom usage printer directly.
-# Only intercept when --help is immediately after 'cloud' (not 'cloud v2 --help').
-if _get_subcommand() == 'cloud':
-	cloud_idx = sys.argv.index('cloud')
-	if cloud_idx + 1 < len(sys.argv) and sys.argv[cloud_idx + 1] in ('--help', '-h'):
-		from browser_use.skill_cli.commands.cloud import handle_cloud_command
-
-		sys.exit(handle_cloud_command(['--help']))
+# Cloud commands removed in this local-only fork.
 
 # =============================================================================
 # Utility functions (inlined to avoid imports)
@@ -430,10 +422,6 @@ def ensure_daemon(
 	*,
 	session: str = 'default',
 	explicit_config: bool = False,
-	use_cloud: bool = False,
-	cloud_profile_id: str | None = None,
-	cloud_proxy_country_code: str | None = None,
-	cloud_timeout: int | None = None,
 ) -> None:
 	"""Start daemon if not running. Uses state file for phase-aware decisions."""
 	probe = _probe_session(session)
@@ -452,7 +440,6 @@ def ensure_daemon(
 					data.get('headed') == headed
 					and data.get('profile') == profile
 					and data.get('cdp_url') == cdp_url
-					and data.get('use_cloud') == use_cloud
 				):
 					return  # Already running with correct config
 
@@ -518,27 +505,9 @@ def ensure_daemon(
 		cmd.extend(['--profile', profile])
 	if cdp_url:
 		cmd.extend(['--cdp-url', cdp_url])
-	if use_cloud:
-		cmd.append('--use-cloud')
-	if cloud_profile_id is not None:
-		cmd.extend(['--cloud-profile-id', cloud_profile_id])
-	if cloud_proxy_country_code is not None:
-		cmd.extend(['--cloud-proxy-country', cloud_proxy_country_code])
-	if cloud_timeout is not None:
-		cmd.extend(['--cloud-timeout', str(cloud_timeout)])
 
 	# Set up environment
 	env = os.environ.copy()
-
-	# For cloud mode, inject API key from config.json into daemon env.
-	# The library's CloudBrowserClient reads BROWSER_USE_API_KEY env var directly,
-	# so we inject it to prevent fallback to ~/.config/browseruse/cloud_auth.json.
-	if use_cloud:
-		from browser_use.skill_cli.config import get_config_value
-
-		cli_api_key = get_config_value('api_key')
-		if cli_api_key:
-			env['BROWSER_USE_API_KEY'] = str(cli_api_key)
 
 	# Start daemon as background process
 	if sys.platform == 'win32':
@@ -618,16 +587,7 @@ def build_parser() -> argparse.ArgumentParser:
 	# Build epilog
 	epilog_parts = []
 
-	epilog_parts.append("""Cloud API:
-  browser-use cloud login <api-key>             # Save API key
-  browser-use cloud connect                     # Provision cloud browser
-  browser-use cloud v2 GET /browsers            # List browsers
-  browser-use cloud v2 POST /tasks '{...}'      # Create task
-  browser-use cloud v2 poll <task-id>           # Poll task until done
-  browser-use cloud v2 --help                   # Show API endpoints""")
-
-	epilog_parts.append("""
-Setup:
+	epilog_parts.append("""Setup:
   browser-use open https://example.com          # Navigate to URL
   browser-use install                           # Install Chromium browser
   browser-use init                              # Generate template file""")
@@ -936,66 +896,6 @@ Setup:
 	return parser
 
 
-def _handle_cloud_connect(cloud_args: list[str], args: argparse.Namespace, session: str) -> int:
-	"""Handle `browser-use cloud connect` — zero-config cloud browser provisioning."""
-	# Mutual exclusivity checks
-	if getattr(args, 'connect', False):
-		print('Error: --connect and cloud connect are mutually exclusive', file=sys.stderr)
-		return 1
-	if args.cdp_url:
-		print('Error: --cdp-url and cloud connect are mutually exclusive', file=sys.stderr)
-		return 1
-	if args.profile:
-		print('Error: --profile and cloud connect are mutually exclusive', file=sys.stderr)
-		return 1
-
-	# Validate API key exists before spawning daemon (shows our CLI error, not library's)
-	from browser_use.skill_cli.commands.cloud import (
-		_get_api_key,
-		_get_cloud_connect_proxy,
-		_get_cloud_connect_timeout,
-		_get_or_create_cloud_profile,
-	)
-
-	_get_api_key()  # exits with helpful message if no key
-
-	cloud_profile_id = _get_or_create_cloud_profile()
-
-	# Start daemon with cloud config
-	if not args.json:
-		print('Connecting...', end='', flush=True)
-	ensure_daemon(
-		args.headed,
-		None,
-		session=session,
-		explicit_config=True,
-		use_cloud=True,
-		cloud_profile_id=cloud_profile_id,
-		cloud_proxy_country_code=_get_cloud_connect_proxy(),
-		cloud_timeout=_get_cloud_connect_timeout(),
-	)
-
-	# Send connect command to force immediate session creation
-	response = send_command('connect', {}, session=session)
-
-	if args.json:
-		print(json.dumps(response))
-	else:
-		print('\r' + ' ' * 20 + '\r', end='')  # clear "Connecting..."
-		if response.get('success'):
-			data = response.get('data', {})
-			print(f'status: {data.get("status", "unknown")}')
-			if 'live_url' in data:
-				print(f'live_url: {data["live_url"]}')
-			if 'cdp_url' in data:
-				print(f'cdp_url: {data["cdp_url"]}')
-		else:
-			print(f'Error: {response.get("error")}', file=sys.stderr)
-			return 1
-
-	return 0
-
-
 def _handle_sessions(args: argparse.Namespace) -> int:
 	"""List active daemon sessions."""
 	home_dir = _get_home_dir()
@@ -1043,10 +943,7 @@ def _handle_sessions(args: argparse.Namespace) -> int:
 						config_parts.append(f'profile={data["profile"]}')
 					if data.get('cdp_url'):
 						entry['cdp_url'] = data['cdp_url']
-						if not data.get('use_cloud'):
-							config_parts.append('cdp')
-					if data.get('use_cloud'):
-						config_parts.append('cloud')
+						config_parts.append('cdp')
 					entry['config'] = ', '.join(config_parts) if config_parts else 'headless'
 			except Exception:
 				entry['config'] = '?'
@@ -1204,25 +1101,15 @@ def main() -> int:
 	if args.command == 'sessions':
 		return _handle_sessions(args)
 
-	# Handle cloud subcommands
+	# Cloud commands removed in this local-only fork.
 	if args.command == 'cloud':
-		cloud_args = getattr(args, 'cloud_args', [])
+		print('Error: cloud commands are not available in this local-only fork.', file=sys.stderr)
+		return 1
 
-		# Intercept 'cloud connect' — needs daemon, not REST passthrough
-		if cloud_args and cloud_args[0] == 'connect':
-			return _handle_cloud_connect(cloud_args[1:], args, session)
-
-		# All other cloud subcommands are stateless REST passthroughs
-		from browser_use.skill_cli.commands.cloud import handle_cloud_command
-
-		return handle_cloud_command(cloud_args)
-
-	# Handle profile subcommand — passthrough to profile-use Go binary
+	# Profile sync removed in this local-only fork.
 	if args.command == 'profile':
-		from browser_use.skill_cli.profile_use import run_profile_use
-
-		profile_argv = getattr(args, 'profile_args', [])
-		return run_profile_use(profile_argv)
+		print('Error: profile sync is not available in this local-only fork.', file=sys.stderr)
+		return 1
 
 	# Handle setup command
 	if args.command == 'setup':
@@ -1420,7 +1307,6 @@ def main() -> int:
 	if args.connect:
 		print('Note: --connect has been replaced.', file=sys.stderr)
 		print('  To connect to Chrome:  browser-use connect', file=sys.stderr)
-		print('  For cloud browser:     browser-use cloud connect', file=sys.stderr)
 		print('  For multiple agents:   use --session NAME per agent', file=sys.stderr)
 		return 1
 

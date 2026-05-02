@@ -15,11 +15,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from browser_use import Agent, ChatBrowserUse
+from browser_use import Agent, ChatOpenAI
 
 
 async def main():
-	llm = ChatBrowserUse(model='bu-2-0')
+	llm = ChatOpenAI(model='gpt-4o')
 	task = "Search Google for 'what is browser automation' and tell me the top 3 results"
 	agent = Agent(task=task, llm=llm)
 	await agent.run()

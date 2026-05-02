@@ -25,12 +25,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from browser_use import Agent, ChatBrowserUse
+from browser_use import Agent, ChatOpenAI
 
 
 async def main():
 	# Initialize the model
-	llm = ChatBrowserUse(model='bu-2-0')
+	llm = ChatOpenAI(model='gpt-4o')
 
 	# Define a data extraction task
 	task = """

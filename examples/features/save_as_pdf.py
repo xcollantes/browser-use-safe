@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from browser_use import Agent, ChatBrowserUse
+from browser_use import Agent, ChatOpenAI
 
 
 async def main():
@@ -29,7 +29,7 @@ async def main():
 			'Go to https://news.ycombinator.com and save the front page as a PDF named "hackernews". '
 			'Then go to https://en.wikipedia.org/wiki/Web_browser and save just that article as a PDF in A4 format.'
 		),
-		llm=ChatBrowserUse(model='bu-2-0'),
+		llm=ChatOpenAI(model='gpt-4o'),
 	)
 
 	history = await agent.run()

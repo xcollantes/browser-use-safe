@@ -12,7 +12,6 @@ from pathlib import Path
 from typing import Any
 
 import anyio
-import httpx
 from dotenv import load_dotenv
 
 from browser_use.llm.base import BaseChatModel
@@ -50,11 +49,9 @@ class TokenCost:
 
 	CACHE_DIR_NAME = 'browser_use/token_cost'
 	CACHE_DURATION = timedelta(days=1)
-	DEFAULT_PRICING_URL = 'https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json'
-
 	def __init__(self, include_cost: bool = False, pricing_url: str | None = None):
 		self.include_cost = include_cost or os.getenv('BROWSER_USE_CALCULATE_COST', 'false').lower() == 'true'
-		self.pricing_url = pricing_url or self.DEFAULT_PRICING_URL
+		self.pricing_url = pricing_url or ''
 
 		self.usage_history: list[TokenUsageEntry] = []
 		self.registered_llms: dict[str, BaseChatModel] = {}
@@ -131,7 +128,7 @@ class TokenCost:
 	def _cache_source_matches(self, cached: CachedPricingData) -> bool:
 		"""Only use cached pricing files from the same source URL."""
 		if cached.source_url is None:
-			return self.pricing_url == self.DEFAULT_PRICING_URL
+			return not self.pricing_url
 
 		return cached.source_url == self.pricing_url
 

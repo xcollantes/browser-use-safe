@@ -15,8 +15,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from browser_use import Agent
-from browser_use.llm.browser_use.chat import ChatBrowserUse
+from browser_use import Agent, ChatOpenAI
 
 # task from GAIA
 task = """
@@ -27,7 +26,7 @@ Round your result to the nearest 1000 hours and do not use any comma separators 
 
 
 async def main():
-	llm = ChatBrowserUse(model='bu-2-0')
+	llm = ChatOpenAI(model='gpt-4o')
 	agent = Agent(
 		task=task,
 		llm=llm,

@@ -1,4 +1,5 @@
-from browser_use.skills.service import SkillService
-from browser_use.skills.views import MissingCookieException
+"""Skills module - removed in this local-only fork."""
 
-__all__ = ['SkillService', 'MissingCookieException']
+from browser_use.skills.service import SkillService
+
+__all__ = ['SkillService']

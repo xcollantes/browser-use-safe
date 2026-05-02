@@ -50,9 +50,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(
 load_dotenv()
 
 
-os.environ['ANONYMIZED_TELEMETRY'] = 'false'
-
-
 from browser_use import Agent, BrowserProfile, ChatAzureOpenAI
 
 # Configuration LLM

@@ -13,49 +13,21 @@
 </div>
 
 <div align="center">
-<a href="https://cloud.browser-use.com?utm_source=github&utm_medium=readme-badge-downloads"><img src="https://media.browser-use.tools/badges/package" height="48" alt="Browser-Use Package Download Statistics"></a>
+<b>Local-only fork - all cloud/telemetry code removed</b>
 </div>
 
 ---
 
 <div align="center">
-<a href="#demos"><img src="https://media.browser-use.tools/badges/demos" alt="Demos"></a>
-<img width="16" height="1" alt="">
-<a href="https://docs.browser-use.com"><img src="https://media.browser-use.tools/badges/docs" alt="Docs"></a>
-<img width="16" height="1" alt="">
-<a href="https://browser-use.com/posts"><img src="https://media.browser-use.tools/badges/blog" alt="Blog"></a>
-<img width="16" height="1" alt="">
-<a href="https://browsermerch.com"><img src="https://media.browser-use.tools/badges/merch" alt="Merch"></a>
-<img width="100" height="1" alt="">
-<a href="https://github.com/browser-use/browser-use"><img src="https://media.browser-use.tools/badges/github" alt="Github Stars"></a>
-<img width="4" height="1" alt="">
-<a href="https://x.com/intent/user?screen_name=browser_use"><img src="https://media.browser-use.tools/badges/twitter" alt="Twitter"></a>
-<img width="4" height="1" alt="">
-<a href="https://link.browser-use.com/discord"><img src="https://media.browser-use.tools/badges/discord" alt="Discord"></a>
-<img width="4" height="1" alt="">
-<a href="https://cloud.browser-use.com?utm_source=github&utm_medium=readme-badge-cloud"><img src="https://media.browser-use.tools/badges/cloud" height="48" alt="Browser-Use Cloud"></a>
+<a href="#demos">Demos</a> |
+<a href="https://github.com/browser-use/browser-use">Upstream Repo</a>
 </div>
 
 </br>
 
-🌤️ Want to skip the setup? Use our <b>[cloud](https://cloud.browser-use.com?utm_source=github&utm_medium=readme-skip-setup)</b> for faster, scalable, stealth-enabled browser automation!
+# 👋 Quickstart (local-only fork)
 
-# 🤖 LLM Quickstart
-
-1. Direct your favorite coding agent (Cursor, Claude Code, etc) to [Agents.md](https://docs.browser-use.com/llms-full.txt)
-2. Prompt away!
-
-<br/>
-
-# 👋 Human Quickstart
-
-**1. Create environment and install Browser-Use with [uv](https://docs.astral.sh/uv/) (Python>=3.11):**
-```bash
-uv init && uv add browser-use && uv sync
-# uvx browser-use install  # Run if you don't have Chromium installed
-```
-
-**Working from a git clone (library + CLI in one tree):**
+**1. Clone and set up with [uv](https://docs.astral.sh/uv/) (Python>=3.11):**
 ```bash
 uv venv --python 3.11
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
@@ -64,29 +36,27 @@ uv run browser-use doctor   # optional sanity check
 uv run browser-use --help   # fast CLI (default entry point)
 ```
 
-**2. [Optional] Get your API key from [Browser Use Cloud](https://cloud.browser-use.com/new-api-key?utm_source=github&utm_medium=readme-quickstart-api-key):**
+**2. Set your LLM API key:**
 ```
 # .env
-BROWSER_USE_API_KEY=your-key
+OPENAI_API_KEY=your-key
 # GOOGLE_API_KEY=your-key
 # ANTHROPIC_API_KEY=your-key
 ```
 
 **3. Run your first agent:**
 ```python
-from browser_use import Agent, Browser, ChatBrowserUse
+from browser_use import Agent, Browser, ChatOpenAI
 # from browser_use import ChatGoogle  # ChatGoogle(model='gemini-3-flash-preview')
 # from browser_use import ChatAnthropic  # ChatAnthropic(model='claude-sonnet-4-6')
 import asyncio
 
 async def main():
-    browser = Browser(
-        # use_cloud=True,  # Use a stealth browser on Browser Use Cloud
-    )
+    browser = Browser()
 
     agent = Agent(
         task="Find the number of stars of the browser-use repo",
-        llm=ChatBrowserUse(),
+        llm=ChatOpenAI(model='gpt-4o'),
         # llm=ChatGoogle(model='gemini-3-flash-preview'),
         # llm=ChatAnthropic(model='claude-sonnet-4-6'),
         browser=browser,
@@ -97,31 +67,9 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 
-Check out the [library docs](https://docs.browser-use.com/open-source/introduction) and the [cloud docs](https://docs.cloud.browser-use.com?utm_source=github&utm_medium=readme-cloud-docs) for more!
+This is a **local-only fork** with all cloud/telemetry code removed.
 
 <br/>
-
-# Open Source vs Cloud
-
-<picture>
-  <source media="(prefers-color-scheme: light)" srcset="static/accuracy_by_model_light.png">
-  <source media="(prefers-color-scheme: dark)" srcset="static/accuracy_by_model_dark.png">
-  <img alt="BU Bench V1 - LLM Success Rates" src="static/accuracy_by_model_light.png" width="100%">
-</picture>
-
-We benchmark Browser Use across 100 real-world browser tasks. Full benchmark is open source: **[browser-use/benchmark](https://github.com/browser-use/benchmark)**.
-
-**Use the Open-Source Agent**
-- You need [custom tools](https://docs.browser-use.com/customize/tools/basics) or deep code-level integration
-- We recommend pairing with our [cloud browsers](https://docs.browser-use.com/open-source/customize/browser/remote) for leading stealth, proxy rotation, and scaling
-- Or self-host the open-source agent fully on your own machines
-
-**Use the [Fully-Hosted Cloud Agent](https://cloud.browser-use.com?utm_source=github&utm_medium=readme-hosted-agent) (recommended)**
-- Much more powerful agent for complex tasks (see plot above)
-- Easiest way to start and scale
-- Best stealth with proxy rotation and captcha solving
-- 1000+ integrations (Gmail, Slack, Notion, and more)
-- Persistent filesystem and memory
 
 <br/>
 
@@ -217,7 +165,7 @@ curl -o ~/.claude/skills/browser-use/SKILL.md \
 
 <br/>
 
-## Integrations, hosting, custom tools, MCP, and more on our [Docs ↗](https://docs.browser-use.com)
+## Custom tools, MCP, and more
 
 <br/>
 
@@ -226,24 +174,7 @@ curl -o ~/.claude/skills/browser-use/SKILL.md \
 <details>
 <summary><b>What's the best model to use?</b></summary>
 
-We optimized **ChatBrowserUse()** specifically for browser automation tasks. On avg it completes tasks 3-5x faster than other models with SOTA accuracy.
-
-**Pricing (per 1M tokens):**
-- Input tokens: $0.20
-- Cached input tokens: $0.02
-- Output tokens: $2.00
-
-For other LLM providers, see our [supported models documentation](https://docs.browser-use.com/supported-models).
-</details>
-
-<details>
-<summary><b>Should I use the Browser Use system prompt with the open-source preview model?</b></summary>
-
-Yes. If you use `ChatBrowserUse(model='browser-use/bu-30b-a3b-preview')` with a normal `Agent(...)`, Browser Use still sends its default agent system prompt for you.
-
-You do **not** need to add a separate custom "Browser Use system message" just because you switched to the open-source preview model. Only use `extend_system_message` or `override_system_message` when you intentionally want to customize the default behavior for your task.
-
-If you want the best default speed/accuracy, we still recommend the newer hosted `bu-*` models. If you want the open-source preview model, the setup stays the same apart from the `model=` value.
+This fork supports any OpenAI-compatible, Google, Anthropic, or Ollama model. Choose whichever fits your use case.
 </details>
 
 <details>
@@ -273,13 +204,13 @@ agent = Agent(
 <details>
 <summary><b>Can I use this for free?</b></summary>
 
-Yes! Browser-Use is open source and free to use. You only need to choose an LLM provider (like OpenAI, Google, ChatBrowserUse, or run local models with Ollama).
+Yes! Browser-Use is open source and free to use. You only need to choose an LLM provider (like OpenAI, Google, Anthropic, or run local models with Ollama).
 </details>
 
 <details>
 <summary><b>Terms of Service</b></summary>
 
-This open-source library is licensed under the MIT License. For Browser Use services & data policy, see our [Terms of Service](https://browser-use.com/legal/terms-of-service) and [Privacy Policy](https://browser-use.com/privacy/).
+This open-source library is licensed under the MIT License.
 </details>
 
 <details>
@@ -288,7 +219,6 @@ This open-source library is licensed under the MIT License. For Browser Use serv
 Check out our authentication examples:
 - [Using real browser profiles](https://github.com/browser-use/browser-use/blob/main/examples/browser/real_browser.py) - Reuse your existing Chrome profile with saved logins
 - If you want to use temporary accounts with inbox, choose AgentMail
-- To sync your auth profile with the remote browser, run `curl -fsSL https://browser-use.com/profile.sh | BROWSER_USE_API_KEY=XXXX sh` (replace XXXX with your API key)
 
 These examples show how to maintain sessions and handle authentication seamlessly.
 </details>
@@ -296,7 +226,7 @@ These examples show how to maintain sessions and handle authentication seamlessl
 <details>
 <summary><b>How do I solve CAPTCHAs?</b></summary>
 
-For CAPTCHA handling, you need better browser fingerprinting and proxies. Use [Browser Use Cloud](https://cloud.browser-use.com?utm_source=github&utm_medium=readme-faq-captcha) which provides stealth browsers designed to avoid detection and CAPTCHA challenges.
+CAPTCHA handling requires better browser fingerprinting and proxies. You can configure a proxy via `Browser(proxy=ProxySettings(server='...'))` and use a real Chrome profile to reduce detection.
 </details>
 
 <details>
@@ -304,12 +234,11 @@ For CAPTCHA handling, you need better browser fingerprinting and proxies. Use [B
 
 Chrome can consume a lot of memory, and running many agents in parallel can be tricky to manage.
 
-For production use cases, use our [Browser Use Cloud API](https://cloud.browser-use.com?utm_source=github&utm_medium=readme-faq-production) which handles:
-- Scalable browser infrastructure
-- Memory management
-- Proxy rotation
-- Stealth browser fingerprinting
-- High-performance parallel execution
+For production deployments, consider:
+- Running browsers in Docker containers for isolation
+- Using a proxy provider for stealth and geo-targeting
+- Monitoring memory (Chrome is hungry) and using headless mode
+- Connecting to remote browsers via `cdp_url` for scaling
 </details>
 
 <br/>

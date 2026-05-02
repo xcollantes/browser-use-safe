@@ -76,12 +76,11 @@ def _check_browser() -> dict[str, Any]:
 
 
 async def _check_network() -> dict[str, Any]:
-	"""Check basic network connectivity."""
+	"""Check basic network connectivity (best-effort, non-fatal)."""
 	try:
 		import httpx
 
 		async with httpx.AsyncClient(timeout=5.0) as client:
-			# Just ping a reliable endpoint
 			response = await client.head('https://api.github.com', follow_redirects=True)
 			if response.status_code < 500:
 				return {
@@ -92,9 +91,9 @@ async def _check_network() -> dict[str, Any]:
 		logger.debug(f'Network check failed: {e}')
 
 	return {
-		'status': 'warning',
-		'message': 'Network connectivity check inconclusive',
-		'note': 'Some features may not work offline',
+		'status': 'ok',
+		'message': 'Network check skipped (local-only fork)',
+		'note': 'Network is not required for local operation',
 	}
 
 
@@ -116,19 +115,10 @@ def _check_cloudflared() -> dict[str, Any]:
 
 
 def _check_profile_use() -> dict[str, Any]:
-	"""Check if profile-use binary is available (needed for browser-use profile)."""
-	from browser_use.skill_cli.profile_use import get_profile_use_binary
-
-	binary = get_profile_use_binary()
-	if binary:
-		return {
-			'status': 'ok',
-			'message': f'profile-use installed ({binary})',
-		}
+	"""Profile sync removed in this local-only fork."""
 	return {
-		'status': 'missing',
-		'message': 'profile-use not installed (needed for browser-use profile)',
-		'fix': 'browser-use profile update',
+		'status': 'ok',
+		'message': 'profile-use not applicable (local-only fork)',
 	}
 
 

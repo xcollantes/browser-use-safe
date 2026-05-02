@@ -56,7 +56,6 @@ if TYPE_CHECKING:
 	from browser_use.llm import models
 	from browser_use.llm.anthropic.chat import ChatAnthropic
 	from browser_use.llm.azure.chat import ChatAzureOpenAI
-	from browser_use.llm.browser_use.chat import ChatBrowserUse
 	from browser_use.llm.google.chat import ChatGoogle
 	from browser_use.llm.groq.chat import ChatGroq
 	from browser_use.llm.litellm.chat import ChatLiteLLM
@@ -65,7 +64,6 @@ if TYPE_CHECKING:
 	from browser_use.llm.ollama.chat import ChatOllama
 	from browser_use.llm.openai.chat import ChatOpenAI
 	from browser_use.llm.vercel.chat import ChatVercel
-	from browser_use.sandbox import sandbox
 	from browser_use.tools.service import Controller, Tools
 
 	# Lazy imports mapping - only import when actually accessed
@@ -91,7 +89,6 @@ _LAZY_IMPORTS = {
 	'ChatOpenAI': ('browser_use.llm.openai.chat', 'ChatOpenAI'),
 	'ChatGoogle': ('browser_use.llm.google.chat', 'ChatGoogle'),
 	'ChatAnthropic': ('browser_use.llm.anthropic.chat', 'ChatAnthropic'),
-	'ChatBrowserUse': ('browser_use.llm.browser_use.chat', 'ChatBrowserUse'),
 	'ChatGroq': ('browser_use.llm.groq.chat', 'ChatGroq'),
 	'ChatLiteLLM': ('browser_use.llm.litellm.chat', 'ChatLiteLLM'),
 	'ChatMistral': ('browser_use.llm.mistral.chat', 'ChatMistral'),
@@ -101,8 +98,6 @@ _LAZY_IMPORTS = {
 	'ChatVercel': ('browser_use.llm.vercel.chat', 'ChatVercel'),
 	# LLM models module
 	'models': ('browser_use.llm.models', None),
-	# Sandbox execution
-	'sandbox': ('browser_use.sandbox', 'sandbox'),
 }
 
 
@@ -143,7 +138,6 @@ __all__ = [
 	'ChatOpenAI',
 	'ChatGoogle',
 	'ChatAnthropic',
-	'ChatBrowserUse',
 	'ChatGroq',
 	'ChatLiteLLM',
 	'ChatMistral',
@@ -155,6 +149,4 @@ __all__ = [
 	'Controller',
 	# LLM models module
 	'models',
-	# Sandbox execution
-	'sandbox',
 ]

@@ -222,14 +222,11 @@ class Agent(Generic[Context, AgentStructuredOutput]):
 
 				llm = get_llm_by_name(default_llm_name)
 			else:
-				# No default LLM specified, use the original default
-				from browser_use import ChatBrowserUse
+				raise ValueError(
+					'No LLM provided and no BROWSER_USE_DEFAULT_LLM set. '
+					'Pass an llm argument (e.g. ChatOpenAI, ChatGoogle, ChatAnthropic).'
+				)
 
-				llm = ChatBrowserUse()
-
-		# set flashmode = True if llm is ChatBrowserUse
-		if llm.provider == 'browser-use':
-			flash_mode = True
 
 		# Flash mode strips plan fields from the output schema, so planning is structurally impossible
 		if flash_mode:
@@ -334,9 +331,10 @@ class Agent(Generic[Context, AgentStructuredOutput]):
 		if skill_service is not None:
 			self.skill_service = skill_service
 		elif skill_ids:
-			from browser_use.skills import SkillService
-
-			self.skill_service = SkillService(skill_ids=skill_ids)
+			raise NotImplementedError(
+				'Cloud skills (skill_ids) have been removed from this local-only fork. '
+				'Use custom tools via the Tools class instead.'
+			)
 
 		# Structured output - use explicit param or detect from tools
 		tools_output_model = self.tools.get_output_model()
@@ -1592,10 +1590,6 @@ class Agent(Generic[Context, AgentStructuredOutput]):
 		# Call LLM with JudgementResult as output format
 		kwargs: dict = {'output_format': JudgementResult}
 
-		# Only pass request_type for ChatBrowserUse (other providers don't support it)
-		if self.judge_llm.provider == 'browser-use':
-			kwargs['request_type'] = 'judge'
-
 		try:
 			response = await self.judge_llm.ainvoke(input_messages, **kwargs)
 			judgement: JudgementResult = response.completion  # type: ignore[assignment]
@@ -1640,10 +1634,7 @@ class Agent(Generic[Context, AgentStructuredOutput]):
 				if judgement.failure_reason:
 					judge_log += f'   Failure Reason: {judgement.failure_reason}\n'
 				if judgement.reached_captcha:
-					self.logger.warning(
-						'Agent was blocked by a captcha. Cloud browsers include stealth fingerprinting and proxy rotation to avoid this.\n'
-						'         Try: Browser(use_cloud=True)  |  Get an API key: https://cloud.browser-use.com?utm_source=oss&utm_medium=captcha_nudge'
-					)
+					self.logger.warning('Agent was blocked by a captcha.')
 				judge_log += f'   {judgement.reasoning}\n'
 				self.logger.info(judge_log)
 
@@ -1928,7 +1919,6 @@ class Agent(Generic[Context, AgentStructuredOutput]):
 		urls_replaced = self._process_messsages_and_replace_long_urls_shorter_ones(input_messages)
 
 		# Build kwargs for ainvoke
-		# Note: ChatBrowserUse will automatically generate action descriptions from output_format schema
 		kwargs: dict = {'output_format': self.AgentOutput, 'session_id': self.session_id}
 
 		try:
@@ -2147,10 +2137,7 @@ class Agent(Generic[Context, AgentStructuredOutput]):
 			has_captcha_issue = any(keyword in final_result_str for keyword in captcha_keywords)
 
 			if has_captcha_issue:
-				self.logger.warning(
-					'Agent was blocked by a captcha. Cloud browsers include stealth fingerprinting and proxy rotation to avoid this.\n'
-					'         Try: Browser(use_cloud=True)  |  Get an API key: https://cloud.browser-use.com?utm_source=oss&utm_medium=captcha_nudge'
-				)
+				self.logger.warning('Agent was blocked by a captcha.')
 
 			# General failure message
 			self.logger.info('')

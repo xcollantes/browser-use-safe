@@ -993,12 +993,6 @@ class BrowserUseApp(App):
 			# Links panel with URLs
 			with Container(id='links-panel'):
 				with HorizontalGroup(classes='link-row'):
-					yield Static('Run at scale on cloud:    [blink]☁️[/]  ', markup=True, classes='link-label')
-					yield Link(
-						'https://browser-use.com',
-						url='https://browser-use.com?utm_source=oss&utm_medium=cli',
-						classes='link-white link-url',
-					)
 
 				yield Static('')  # Empty line
 
@@ -1752,9 +1746,7 @@ def _run_template_generation(template: str, output: str | None, force: bool):
 		click.echo('\nNext steps:')
 		click.echo('  1. Install browser-use:')
 		click.echo('     uv pip install browser-use')
-		click.echo('  2. Set up your API key in .env file or environment:')
-		click.echo('     BROWSER_USE_API_KEY=your-key')
-		click.echo('     (Get your key at https://cloud.browser-use.com/new-api-key?utm_source=oss&utm_medium=cli)')
+		click.echo('  2. Set up your LLM API key in .env file or environment')
 		click.echo('  3. Run your script:')
 		click.echo(f'     python {output_path.name}')
 	else:
@@ -1881,9 +1873,7 @@ def init(
 		click.echo('\nNext steps:')
 		click.echo('  1. Install browser-use:')
 		click.echo('     uv pip install browser-use')
-		click.echo('  2. Set up your API key in .env file or environment:')
-		click.echo('     BROWSER_USE_API_KEY=your-key')
-		click.echo('     (Get your key at https://cloud.browser-use.com/new-api-key?utm_source=oss&utm_medium=cli)')
+		click.echo('  2. Set up your LLM API key in .env file or environment')
 		click.echo('  3. Run your script:')
 		click.echo(f'     python {output_path.name}')
 	else:

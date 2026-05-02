@@ -91,12 +91,7 @@ async def handle(action: str, session: SessionInfo, params: dict[str, Any]) -> A
 		if not url.startswith(('http://', 'https://', 'file://')):
 			url = 'https://' + url
 		await actions.navigate(url)
-		result: dict[str, Any] = {'url': url}
-		if bs.browser_profile.use_cloud and bs.cdp_url:
-			from urllib.parse import quote
-
-			result['live_url'] = f'https://live.browser-use.com/?wss={quote(bs.cdp_url, safe="")}'
-		return result
+		return {'url': url}
 
 	elif action == 'click':
 		args = params.get('args', [])
