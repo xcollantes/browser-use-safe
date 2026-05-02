@@ -1,79 +1,74 @@
 """Tripwire tests for the locked-down fork.
 
-These tests assert that the four most common outbound paths in upstream
-browser-use are no-ops in this fork:
-
-  - ProductTelemetry never instantiates a posthog client
-  - CloudSync never reports as enabled
-  - DeviceAuthClient never reports as authenticated and never persists state
-  - check_latest_browser_use_version never returns a result
-  - lmnr observability is forced off
-  - default extensions never auto-download
-
-If any of these assertions fail in CI, somebody has re-introduced an
-unsanctioned external call and the change should be reverted.
+These tests assert that the modules upstream uses for telemetry, cloud
+sync, version checks, and tracing have been removed entirely from this
+fork. If somebody re-adds them the imports below will start succeeding
+and CI will flag it.
 """
 
-import os
+import importlib
 
 import pytest
 
-from browser_use.config import CONFIG
+
+@pytest.mark.parametrize(
+	'module_name',
+	[
+		'browser_use.telemetry',
+		'browser_use.telemetry.service',
+		'browser_use.telemetry.views',
+		'browser_use.sync',
+		'browser_use.sync.auth',
+		'browser_use.sync.service',
+		'browser_use.init_cmd',
+	],
+)
+def test_removed_modules_cannot_be_imported(module_name):
+	with pytest.raises(ModuleNotFoundError):
+		importlib.import_module(module_name)
 
 
-def test_telemetry_client_is_noop():
-	from browser_use.telemetry.service import ProductTelemetry
+def test_version_check_helper_is_gone():
+	from browser_use import utils
 
-	t = ProductTelemetry()
-	assert t._posthog_client is None
-	assert t.user_id == 'UNKNOWN_USER_ID'
+	assert not hasattr(utils, 'check_latest_browser_use_version')
 
 
-def test_cloud_sync_is_disabled():
-	from browser_use.sync.service import CloudSync
+def test_observability_is_a_passthrough():
+	"""@observe / @observe_debug must be pure pass-throughs (no lmnr import path)."""
+	import browser_use.observability as observability
 
-	cs = CloudSync()
-	assert cs.enabled is False
+	assert not hasattr(observability, 'is_lmnr_available')
+	assert not hasattr(observability, '_LMNR_AVAILABLE')
 
+	called: list[int] = []
 
-def test_auth_client_never_authenticated_and_no_disk_writes(tmp_path, monkeypatch):
-	monkeypatch.setenv('BROWSER_USE_CONFIG_DIR', str(tmp_path / 'browseruse'))
-	from browser_use.sync.auth import DeviceAuthClient
+	@observability.observe(name='unit')
+	def fn(x: int) -> int:
+		called.append(x)
+		return x + 1
 
-	c = DeviceAuthClient()
-	assert c.is_authenticated is False
-	assert c.api_token is None
-	assert c.get_headers() == {}
-	# DeviceAuthClient must not persist a `device_id` file or `cloud_auth.json`.
-	assert not (tmp_path / 'browseruse' / 'device_id').exists()
-	assert not (tmp_path / 'browseruse' / 'cloud_auth.json').exists()
+	assert fn(3) == 4
+	assert called == [3]
 
 
-@pytest.mark.asyncio
-async def test_version_check_returns_none():
-	from browser_use.utils import check_latest_browser_use_version
+def test_extensions_off_by_default(monkeypatch):
+	monkeypatch.delenv('BROWSER_USE_DISABLE_EXTENSIONS', raising=False)
+	from browser_use.browser.profile import _get_enable_default_extensions_default
 
-	assert await check_latest_browser_use_version() is None
-
-
-def test_lmnr_observability_is_off():
-	from browser_use import observability
-
-	assert observability.is_lmnr_available() is False
+	assert _get_enable_default_extensions_default() is False
 
 
-def test_extensions_off_by_default():
-	original = os.environ.pop('BROWSER_USE_DISABLE_EXTENSIONS', None)
-	try:
-		from browser_use.browser.profile import _get_enable_default_extensions_default
+def test_config_does_not_expose_cloud_keys():
+	from browser_use.config import CONFIG
 
-		assert _get_enable_default_extensions_default() is False
-	finally:
-		if original is not None:
-			os.environ['BROWSER_USE_DISABLE_EXTENSIONS'] = original
-
-
-def test_config_kill_switch():
-	assert CONFIG.ANONYMIZED_TELEMETRY is False
-	assert CONFIG.BROWSER_USE_CLOUD_SYNC is False
-	assert CONFIG.BROWSER_USE_VERSION_CHECK is False
+	for attr in (
+		'ANONYMIZED_TELEMETRY',
+		'BROWSER_USE_CLOUD_SYNC',
+		'BROWSER_USE_CLOUD_API_URL',
+		'BROWSER_USE_CLOUD_UI_URL',
+		'BROWSER_USE_MODEL_PRICING_URL',
+		'BROWSER_USE_VERSION_CHECK',
+	):
+		with pytest.raises(AttributeError):
+			getattr(CONFIG, attr)

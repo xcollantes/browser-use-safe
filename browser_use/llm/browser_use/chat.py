@@ -133,11 +133,6 @@ class ChatBrowserUse(BaseChatModel):
 		Returns:
 			ChatInvokeCompletion with structured response and usage info
 		"""
-		# Get ANONYMIZED_TELEMETRY setting from config
-		from browser_use.config import CONFIG
-
-		anonymized_telemetry = CONFIG.ANONYMIZED_TELEMETRY
-
 		# Extract session_id from kwargs for sticky routing
 		session_id = kwargs.get('session_id')
 
@@ -147,7 +142,7 @@ class ChatBrowserUse(BaseChatModel):
 			'messages': [self._serialize_message(msg) for msg in messages],
 			'fast': self.fast,
 			'request_type': request_type,
-			'anonymized_telemetry': anonymized_telemetry,
+			'anonymized_telemetry': False,
 		}
 
 		# Add session_id for sticky routing if provided

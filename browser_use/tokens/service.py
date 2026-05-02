@@ -54,7 +54,7 @@ class TokenCost:
 
 	def __init__(self, include_cost: bool = False, pricing_url: str | None = None):
 		self.include_cost = include_cost or os.getenv('BROWSER_USE_CALCULATE_COST', 'false').lower() == 'true'
-		self.pricing_url = pricing_url or CONFIG.BROWSER_USE_MODEL_PRICING_URL or self.DEFAULT_PRICING_URL
+		self.pricing_url = pricing_url or self.DEFAULT_PRICING_URL
 
 		self.usage_history: list[TokenUsageEntry] = []
 		self.registered_llms: dict[str, BaseChatModel] = {}

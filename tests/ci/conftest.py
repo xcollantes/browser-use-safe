@@ -35,14 +35,11 @@ from bubus import BaseEvent
 
 from browser_use import Agent
 from browser_use.browser import BrowserProfile, BrowserSession
-from browser_use.sync.service import CloudSync
 
 
 @pytest.fixture(autouse=True)
 def setup_test_environment():
-	"""
-	Automatically set up test environment for all tests.
-	"""
+	"""Automatically set up test environment for all tests."""
 
 	# Create a temporary directory for test config (but not for extensions)
 	config_dir = tempfile.mkdtemp(prefix='browseruse_tests_')
@@ -50,12 +47,6 @@ def setup_test_environment():
 	original_env = {}
 	test_env_vars = {
 		'SKIP_LLM_API_KEY_VERIFICATION': 'true',
-		'ANONYMIZED_TELEMETRY': 'false',
-		'BROWSER_USE_CLOUD_SYNC': 'true',
-		'BROWSER_USE_CLOUD_API_URL': 'http://placeholder-will-be-replaced-by-specific-test-fixtures',
-		'BROWSER_USE_CLOUD_UI_URL': 'http://placeholder-will-be-replaced-by-specific-test-fixtures',
-		# Don't set BROWSER_USE_CONFIG_DIR anymore - let it use the default ~/.config/browseruse
-		# This way extensions will be cached in ~/.config/browseruse/extensions
 	}
 
 	for key, value in test_env_vars.items():
@@ -173,43 +164,9 @@ async def browser_session():
 
 
 @pytest.fixture(scope='function')
-def cloud_sync(httpserver: HTTPServer):
-	"""
-	Create a CloudSync instance configured for testing.
-
-	This fixture creates a real CloudSync instance and sets up the test environment
-	to use the httpserver URLs.
-	"""
-
-	# Set up test environment
-	test_http_server_url = httpserver.url_for('')
-	os.environ['BROWSER_USE_CLOUD_API_URL'] = test_http_server_url
-	os.environ['BROWSER_USE_CLOUD_UI_URL'] = test_http_server_url
-	os.environ['BROWSER_USE_CLOUD_SYNC'] = 'true'
-
-	# Create CloudSync with test server URL
-	cloud_sync = CloudSync(
-		base_url=test_http_server_url,
-	)
-
-	return cloud_sync
-
-
-@pytest.fixture(scope='function')
 def mock_llm():
 	"""Create a mock LLM that just returns the done action if queried"""
 	return create_mock_llm(actions=None)
-
-
-@pytest.fixture(scope='function')
-def agent_with_cloud(browser_session, mock_llm, cloud_sync):
-	"""Create agent (cloud_sync parameter removed)."""
-	agent = Agent(
-		task='Test task',
-		llm=mock_llm,
-		browser_session=browser_session,
-	)
-	return agent
 
 
 @pytest.fixture(scope='function')

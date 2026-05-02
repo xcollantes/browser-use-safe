@@ -73,65 +73,73 @@ if _get_subcommand() == 'install':
 		sys.exit(1)
 	sys.exit(0)
 
-# Handle 'init' command - generate template files
-# Uses _get_subcommand() to check if 'init' is the actual subcommand,
-# not just anywhere in argv (prevents hijacking: browser-use run "init something")
-if _get_subcommand() == 'init':
-	from browser_use.init_cmd import main as init_main
+# Handle 'init' / '--template' — copy a packaged template into the current directory.
+# The upstream version of these commands fetched template manifests from GitHub at
+# runtime; that has been removed from this fork. Only the templates shipped inside
+# `browser_use/cli_templates/` are available, and the flow is intentionally tiny.
+_PACKAGED_TEMPLATES = {
+	'default': 'default_template.py',
+	'advanced': 'advanced_template.py',
+	'tools': 'tools_template.py',
+}
 
-	# Check if --template or -t flag is present without a value
-	# If so, just remove it and let init_main handle interactive mode
-	if '--template' in sys.argv or '-t' in sys.argv:
-		try:
-			template_idx = sys.argv.index('--template') if '--template' in sys.argv else sys.argv.index('-t')
-			template = sys.argv[template_idx + 1] if template_idx + 1 < len(sys.argv) else None
 
-			# If template is not provided or is another flag, remove the flag and use interactive mode
-			if not template or template.startswith('-'):
-				if '--template' in sys.argv:
-					sys.argv.remove('--template')
-				else:
-					sys.argv.remove('-t')
-		except (ValueError, IndexError):
-			pass
+def _emit_packaged_template(template: str, output: str | None, force: bool) -> int:
+	if template not in _PACKAGED_TEMPLATES:
+		print(
+			f"Unknown template '{template}'. Available: {', '.join(sorted(_PACKAGED_TEMPLATES))}",
+			file=sys.stderr,
+		)
+		return 1
 
-	# Remove 'init' from sys.argv so click doesn't see it as an unexpected argument
-	sys.argv.remove('init')
-	init_main()
-	sys.exit(0)
+	templates_dir = Path(__file__).resolve().parent.parent / 'cli_templates'
+	src = templates_dir / _PACKAGED_TEMPLATES[template]
+	dst = Path(output) if output else Path.cwd() / f'browser_use_{template}.py'
 
-# Handle --template flag directly (without 'init' subcommand)
-# Delegate to init_main() which handles full template logic (directories, manifests, etc.)
-if '--template' in sys.argv:
-	from browser_use.init_cmd import main as init_main
+	if dst.exists() and not force:
+		print(f'⚠️  {dst} already exists. Pass --force to overwrite.', file=sys.stderr)
+		return 1
 
-	# Build clean argv for init_main: keep only init-relevant flags
-	new_argv = [sys.argv[0]]  # program name
+	dst.parent.mkdir(parents=True, exist_ok=True)
+	dst.write_text(src.read_text(encoding='utf-8'), encoding='utf-8')
+	print(f'✅ Created {dst}')
+	return 0
 
+
+def _parse_template_flags() -> tuple[str | None, str | None, bool, bool]:
+	template: str | None = None
+	output: str | None = None
+	force = False
+	list_templates = False
 	i = 1
 	while i < len(sys.argv):
 		arg = sys.argv[i]
-		# Keep --template/-t and its value
-		if arg in ('--template', '-t'):
-			new_argv.append(arg)
-			if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith('-'):
-				new_argv.append(sys.argv[i + 1])
-				i += 1
-		# Keep --output/-o and its value
-		elif arg in ('--output', '-o'):
-			new_argv.append(arg)
-			if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith('-'):
-				new_argv.append(sys.argv[i + 1])
-				i += 1
-		# Keep --force/-f and --list/-l flags
-		elif arg in ('--force', '-f', '--list', '-l'):
-			new_argv.append(arg)
-		# Skip other flags (--headed, etc.)
+		if arg in ('--template', '-t') and i + 1 < len(sys.argv):
+			template = sys.argv[i + 1]
+			i += 2
+			continue
+		if arg in ('--output', '-o') and i + 1 < len(sys.argv):
+			output = sys.argv[i + 1]
+			i += 2
+			continue
+		if arg in ('--force', '-f'):
+			force = True
+		elif arg in ('--list', '-l'):
+			list_templates = True
 		i += 1
+	return template, output, force, list_templates
 
-	sys.argv = new_argv
-	init_main()
-	sys.exit(0)
+
+if _get_subcommand() == 'init' or '--template' in sys.argv:
+	template, output, force, list_templates = _parse_template_flags()
+
+	if list_templates or template is None:
+		print('Available templates (pass --template <name>):')
+		for name in sorted(_PACKAGED_TEMPLATES):
+			print(f'  {name}')
+		sys.exit(0 if list_templates else 1)
+
+	sys.exit(_emit_packaged_template(template, output, force))
 
 # Handle 'cloud --help' / 'cloud -h' early — argparse intercepts --help before
 # REMAINDER can capture it, so we route to our custom usage printer directly.

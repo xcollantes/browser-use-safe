@@ -13,7 +13,6 @@ from sys import stderr
 from typing import Any, ParamSpec, TypeVar
 from urllib.parse import urlparse
 
-import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -639,11 +638,6 @@ def get_browser_use_version() -> str:
 	except Exception as e:
 		logger.debug(f'Error detecting browser-use version: {type(e).__name__}: {e}')
 		return 'unknown'
-
-
-async def check_latest_browser_use_version() -> str | None:
-	"""Disabled in this fork — never contacts PyPI."""
-	return None
 
 
 @cache

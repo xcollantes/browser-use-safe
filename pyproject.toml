@@ -71,7 +71,6 @@ examples = [
     "langchain-openai==1.1.7",
 ]
 eval = [
-    "lmnr[all]==0.7.42",
     "anyio==4.12.1",
     "psutil==7.2.2",
     "datamodel-code-generator==0.53.0",
@@ -227,7 +226,6 @@ dev-dependencies = [
     "pyright==1.1.408",
     "ty==0.0.14",
     "pytest-xdist==3.8.0",
-    "lmnr[all]==0.7.42",
     # "pytest-playwright-asyncio>=0.7.0",  # not actually needed I think
     "pytest-timeout==2.4.0",
     "pydantic_settings==2.12.0",
