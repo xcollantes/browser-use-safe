@@ -55,6 +55,15 @@ uv init && uv add browser-use && uv sync
 # uvx browser-use install  # Run if you don't have Chromium installed
 ```
 
+**Working from a git clone (library + CLI in one tree):**
+```bash
+uv venv --python 3.11
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
+uv sync
+uv run browser-use doctor   # optional sanity check
+uv run browser-use --help   # fast CLI (default entry point)
+```
+
 **2. [Optional] Get your API key from [Browser Use Cloud](https://cloud.browser-use.com/new-api-key?utm_source=github&utm_medium=readme-quickstart-api-key):**
 ```
 # .env
@@ -147,11 +156,13 @@ https://github.com/user-attachments/assets/ac34f75c-057a-43ef-ad06-5b2c9d42bf06
 
 # 🚀 Template Quickstart
 
-**Want to get started even faster?** Generate a ready-to-run template:
+**Want to get started even faster?** Generate a ready-to-run template from the files shipped in the package (no network fetch):
 
 ```bash
 uvx browser-use init --template default
 ```
+
+`init` needs a template name. List names with `uvx browser-use init --list` (or run `init` without `--template` to print the same list and exit).
 
 This creates a `browser_use_default.py` file with a working example. Available templates:
 - `default` - Minimal setup to get started quickly
@@ -167,10 +178,12 @@ uvx browser-use init --template default --output my_agent.py
 
 # 💻 CLI
 
-Fast, persistent browser automation from the command line:
+The **`browser-use`** command (also **`bu`**, **`browseruse`**, **`browser`**) is the default: a fast CLI backed by a persistent local daemon so the browser stays up between commands.
 
+**Start using it:**
 ```bash
-browser-use open https://example.com    # Navigate to URL
+browser-use --help                      # Overview and subcommands
+browser-use open https://example.com    # Navigate to URL (starts daemon if needed)
 browser-use state                       # See clickable elements
 browser-use click 5                     # Click element by index
 browser-use type "Hello"                # Type text
@@ -178,7 +191,19 @@ browser-use screenshot page.png         # Take screenshot
 browser-use close                       # Close browser
 ```
 
-The CLI keeps the browser running between commands for fast iteration. See [CLI docs](browser_use/skill_cli/README.md) for all commands.
+**MCP server (stdin/stdout JSON-RPC for tools like Claude Desktop):**
+```bash
+uvx browser-use --mcp
+# or: browser-use --mcp
+```
+
+**Legacy full-screen TUI** (Textual UI, separate entry point): install the optional CLI extra, then run **`browser-use-tui`** instead of `browser-use`:
+```bash
+uv add "browser-use[cli]"    # or: pip install "browser-use[cli]"
+browser-use-tui
+```
+
+See [CLI docs](browser_use/skill_cli/README.md) for all commands.
 
 ### Claude Code Skill
 
